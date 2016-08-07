@@ -1,15 +1,15 @@
 # RememberParams
-Rails gem that makes actions remembers GET params like keywords and page.
+Rails gem that makes actions remember GET params like keywords and page.
 
 ## Scenario
 
 Say you have that index action where you can search, filter and
 paginate through records. Once you click on one of the records
-you lose track of the exact location (that is search keywords,
-filter settings and page).
+you lose track of the exact location (e.g. search keywords,
+filter settings or page).
 
-RememberParams will bring users back to that location when they
-return to the index page by remembering the search keywords,
+RememberParams will bring users back to that exact location when
+they return to the index page by remembering the search keywords,
 filter settings and page.
 
 ## Usage
@@ -19,13 +19,13 @@ To make a controller action remember its params simply add the
 
 ```ruby
 class BooksController < ApplicationController
-  remember_params :keywords, :page # defaults are index and 1 hour
-  remember_params :client_id, on: :client_list, for: 1.minute
+  remember_params :keywords, :page # defaults are on: index and duration: 1.hour
+  remember_params :client_id, on: :client_list, duration: 1.minute
 end
 ```
 
 Browsing the action without any params will automatically try to restore
-params and redirect to the same location but with previously set params.
+params and redirect to the same route but with previously set params.
 
 To reset params set them to empty string:
 
