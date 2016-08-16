@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     remember_params (0.1.0)
-      rails (~> 5.0.0)
+      rails (~> 5.0)
 
 GEM
   remote: https://rubygems.org/
@@ -114,7 +114,7 @@ PLATFORMS
 
 DEPENDENCIES
   remember_params!
-  timecop
+  timecop (~> 0.8)
 
 BUNDLED WITH
    1.11.2
