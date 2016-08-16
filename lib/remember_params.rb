@@ -27,6 +27,7 @@ module RememberParams
   end
 
   def restore_or_save_params
+    return if request.xhr?
     return unless request.get?
     return unless respond_to? :remember_params_config
     return unless config = self.remember_params_config[action_name]
