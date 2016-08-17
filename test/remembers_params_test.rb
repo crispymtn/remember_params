@@ -7,9 +7,18 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to books_index_path(foo: 1, bar: 2)
   end
 
-  test 'resets params' do
+  test 'overwrites remembered params' do
     get books_index_path, params: { foo: 1, bar: 2 }
-    get books_index_path, params: { foo: '', bar: '' }
+    get books_index_path, params: { foo: 3 }
+    get books_index_path
+    assert_redirected_to books_index_path(foo: 3)
+  end
+
+  test 'resets all params' do
+    get books_index_path, params: { foo: 1, bar: 2 }
+    get books_index_path, params: { reset_params: true }
+    follow_redirect!
+    assert_equal path, books_index_path # reset_params is gone
     get books_index_path
     assert_response :success # no redirect
   end
