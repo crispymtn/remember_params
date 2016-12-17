@@ -32,25 +32,37 @@ module RememberParams
     return unless respond_to? :remember_params_config
     return unless config = self.remember_params_config[action_name]
 
-    session[:remembered_params] ||= {}
+    params_to_remember = params.to_unsafe_h.slice(*config[:params])
     key = params.slice(:controller, :action).values.join('/').parameterize
-    params_to_remember = params.permit(*config[:params]).to_h
+    session[:remembered_params]      ||= {}
+    session[:remembered_params][key] ||= {}
 
     # Reset params
-    if params[:reset_params].present?
-      session[:remembered_params].delete(key)
-      redirect_to {}
-    # Save params (also refreshes remembered_at after restore)
-    elsif params_to_remember.any?
-      params_to_remember['remembered_at'] = DateTime.now
-      session[:remembered_params][key] = params_to_remember
-    # Restore params
-    elsif params_to_remember.empty? &&
-      session[:remembered_params][key]&.except('remembered_at')&.select{|_,v| v.present?}&.any? &&
-      DateTime.parse(session[:remembered_params][key]['remembered_at']) >
-        (DateTime.now - config[:duration])
+    if
+      params[:reset_params].present? ||
+      (
+        (remembered_at = session[:remembered_params][key]['remembered_at']) &&
+        DateTime.parse(remembered_at) < (DateTime.now - config[:duration])
+      )
     then
-      redirect_to params: session[:remembered_params][key].except('remembered_at')
+      session[:remembered_params][key] = {}
+    end
+
+    # Save params (also refreshes remembered_at after restore)
+    if params_to_remember.any?
+      session[:remembered_params][key]
+        .merge!(params_to_remember.merge(remembered_at: DateTime.now)).compact!
+    end
+
+    # Redirect to clean url after reset unless any new params set simultaneously
+    if params[:reset_params] && params_to_remember.empty?
+      redirect_to {} and return
+    end
+
+    # Redirect and restore remembered params unless all present at current location
+    if session[:remembered_params][key].except('remembered_at').select{|k,v| params[k] != v}.any?
+      redirect_to params: params.except(:controller, :action).to_h
+        .merge(session[:remembered_params][key].except('remembered_at'))
     end
   end
 end

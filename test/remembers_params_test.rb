@@ -7,11 +7,17 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to books_index_path(foo: 1, bar: 2)
   end
 
-  test 'overwrites remembered params' do
+  test 'saves and restores array param' do
+    get books_index_path, params: { foo: [1,2] }
+    get books_index_path
+    assert_redirected_to books_index_path(foo: [1,2])
+  end
+
+  test 'overwrites remembered params, keeps not overwritten params' do
     get books_index_path, params: { foo: 1, bar: 2 }
     get books_index_path, params: { foo: 3 }
     get books_index_path
-    assert_redirected_to books_index_path(foo: 3)
+    assert_redirected_to books_index_path(foo: 3, bar: 2)
   end
 
   test 'resets all params' do
@@ -21,6 +27,13 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal path, books_index_path # reset_params is gone
     get books_index_path
     assert_response :success # no redirect
+  end
+
+  test 'resets all params, simultaneously set new params' do
+    get books_index_path, params: { foo: 1, bar: 2 }
+    get books_index_path, params: { reset_params: true, bar: 3 }
+    get books_index_path
+    assert_redirected_to books_index_path(bar: 3)
   end
 
   test 'only saves specified params' do

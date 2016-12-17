@@ -27,10 +27,20 @@ end
 Browsing the action without any params will automatically try to restore
 params and redirect to the same route but with previously set params.
 
-To reset params set them to empty string:
+If for example you have the `keywords` params remembered and follow a link
+with only a `page` param, the remembered `keywords` param and the newly set
+`page` param will be mixed.
+
+Reset all remembered params like this:
 
 ```ruby
-link_to 'Books', books_path(keywords: '', page: '')
+link_to 'Books', books_path(reset_params: true)
+```
+
+You can also mix reset_params and setting new params.
+
+```ruby
+link_to 'Books', books_path(reset_params: true, page: 2)
 ```
 
 ## Installation
