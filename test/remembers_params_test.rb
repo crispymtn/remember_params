@@ -60,6 +60,12 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_response :success # no redirect
   end
 
+  test 'does save params on xhr requests when configured' do
+    get books_xhr_remember_action_path, xhr: true, params: { foo: 1, bar: 2 }
+    get books_xhr_remember_action_path
+    assert_redirected_to books_xhr_remember_action_path(foo: 1, bar: 2)
+  end
+
   test 'invalidates remembered params after specified duration' do
     get books_index_path, params: { foo: 1, bar: 2 }
     Timecop.travel(DateTime.now+2.hours)

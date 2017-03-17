@@ -4,7 +4,7 @@ module RememberParams
   included do
     before_action :restore_or_save_params
 
-    def self.remember_params(*params, on: :index, duration: 1.hour)
+    def self.remember_params(*params, on: :index, duration: 1.hour, xhr: false)
       on = on.to_s
 
       raise '[remember_params] must specify one or more params to remember' if
@@ -21,16 +21,17 @@ module RememberParams
       self.remember_params_config[on] = {}
       self.remember_params_config[on][:params] = params
       self.remember_params_config[on][:duration] = duration
+      self.remember_params_config[on][:xhr] = xhr
 
       self.before_action :restore_or_save_params
     end
   end
 
   def restore_or_save_params
-    return if request.xhr?
     return unless request.get?
     return unless respond_to? :remember_params_config
     return unless config = self.remember_params_config[action_name]
+    return if request.xhr? && !config[:xhr]
 
     params_to_remember = params.to_unsafe_h.slice(*config[:params])
     key = params.slice(:controller, :action).values.join('/').parameterize
