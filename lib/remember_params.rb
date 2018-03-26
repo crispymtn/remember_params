@@ -32,8 +32,13 @@ module RememberParams
     return unless respond_to? :remember_params_config
     return unless config = self.remember_params_config[action_name]
 
-    params_to_remember = params.to_unsafe_h.slice(*config[:params])
-    key = params.slice(:controller, :action).values.join('/').parameterize
+    params_to_remember = params
+      .permit!
+      .slice(*config[:params])
+      .to_h
+      .delete_if { |k,v| v.to_s.length > 50 }
+
+    key = params.permit(:controller, :action).values.join('/').parameterize
     session[:remembered_params]      ||= {}
     session[:remembered_params][key] ||= {}
 
@@ -61,7 +66,7 @@ module RememberParams
 
     # Redirect and restore remembered params unless all present at current location
     if session[:remembered_params][key].except('remembered_at').select{|k,v| params[k] != v}.any?
-      redirect_to params: params.except(:controller, :action).to_h
+      redirect_to params: params_to_remember
         .merge(session[:remembered_params][key].except('remembered_at'))
     end
   end
