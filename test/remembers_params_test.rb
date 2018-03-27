@@ -76,4 +76,13 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     get books_index_path
     assert_redirected_to books_index_path(foo: 1, bar: 2)
   end
+
+  test 'drops very long params' do
+    get books_index_path, params: { foo: 'A' * 5000, bar: 2 }
+    get books_index_path
+    assert_redirected_to books_index_path(bar: 2)
+    get books_index_path, params: { foo: ['A'] * 5000, bar: 2 }
+    get books_index_path
+    assert_redirected_to books_index_path(bar: 2)
+  end
 end
